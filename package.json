@@ -1,0 +1,52 @@
+{
+  "name": "nodetypescript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --watchAll --detectOpenHandles --coverage",
+    "dev": "nodemon ./src/index.ts",
+    "build": "npm run copy-views && tsc",
+    "start": "node ./build/src/index.js",
+    "copy-views": "copyfiles -u 1 src/views/**/*.ejs build/",
+    "start1": "tsc && node ./build/src/index.js",
+    "test-server": "nodemon ./src/serverT.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/mongoose": "^5.11.97",
+    "@types/multer": "^1.4.11",
+    "@types/supertest": "^6.0.2",
+    "bcrypt": "^5.1.1",
+    "copyfiles": "^2.4.1",
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.2.3",
+    "multer": "^1.4.5-lts.1",
+    "node": "^18.20.0",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "ejs": "^3.1.9",
+    "express": "^4.19.2",
+    "fcm-node": "^1.6.1",
+    "firebase": "^10.11.0",
+    "firebase-admin": "^12.0.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
+    "razorpay": "^2.9.2",
+    "socket.io": "^4.7.5",
+    "supertest": "^6.3.4",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2"
+  }
+}

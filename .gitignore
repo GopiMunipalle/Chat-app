@@ -1,0 +1,5 @@
+.env
+node_modules
+build
+nodejs-f579d-firebase-adminsdk-2ezdr-53188602a7.json
+firebaseConfig.ts

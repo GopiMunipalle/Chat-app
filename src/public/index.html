@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Application</title>
+</head>
+
+<body>
+  <input type="text" id="messageInput" placeholder="Type your message" /><br />
+  <button id="sendMessageButton">Send</button><br />
+  <input type="text" id="join-Group" placeholder="enter group name..." /><br />
+  <button id="group-btn">create Group</button><br />
+  <input id="sendMsgToGroup" type="text" placeholder="type message..." /><br />
+  <button id="send-group-button">sendMesage To Group</button><br />
+  <input id="add-group-id" type="text" placeholder="enter group id" />
+  <input id="add-user-id" type="text" placeholder="enter user id" />
+  <button id="add-new-user-to-group">Add New User</button>
+  <div>
+    <input id="remove-group-id" type="text" placeholder="enter group id" />
+    <input id="remove-user-id" type="text" placeholder="enter user id" />
+    <button id="remove-user-to-group">remove User</button>
+  </div>
+  <div>
+    <input id="clear-group-chat-input" type="text" placeholder="enter group id" />
+    <button id="clear-group-chat-button">clear All Chat</button>
+  </div>
+  <div>
+    <button id="deleteMessageInGroup">delete Message </button>
+  </div>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
+    integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
+    crossorigin="anonymous"></script>
+  <script>
+    const socket = io.connect("http://localhost:8080/");
+
+    const inputEl = document.getElementById("messageInput");
+    const groupEl = document.getElementById("join-Group");
+    const sendMsgToGroupEl = document.getElementById("sendMsgToGroup");
+    const addGroupIdEl = document.getElementById("add-group-id");
+    const addNewuserEl = document.getElementById("add-user-id");
+    const removeGroupIdEl = document.getElementById("remove-group-id");
+    const removeNewuserEl = document.getElementById("remove-user-id");
+    const clearGroupCharInputEl = document.getElementById('clear-group-chat-input')
+    const clearGroupChatButton = document.getElementById("clear-group-chat-button")
+    const deleteMessageInGroup = document.getElementById("deleteMessageInGroup")
+    //sending message event
+    let jwtToken='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NjBmODQxYzgxZDFjYmFiODY3OWYwZjUiLCJlbWFpbCI6ImtyaXNobmFAZ21haWwuY29tIiwiaWF0IjoxNzEzMTU2MTAwLCJleHAiOjE3MTMxOTIxMDB9.7iEGAVKFMCQGI8bXhDyegw_WXJm2BgW-uq6DvkI2FZU'
+    document
+      .getElementById("sendMessageButton")
+      .addEventListener("click", async (e) => {
+        let body = {
+          senderId: "660f841c81d1cbab8679f0f5",
+          receiverId: "660f840281d1cbab8679f0f2",
+          content: inputEl.value,
+        };
+
+        const response = await fetch("/chat/sendMessage", {
+          method: "POST",
+          headers: {
+            "content-Type": "application/json",
+            authorization:
+              `Bearer ${jwtToken}`,
+          },
+          body: JSON.stringify(body),
+        });
+        if (response.ok) {
+          socket.emit("sendMessage", body);
+        }
+      });
+
+    //join group event
+    document
+      .getElementById("group-btn")
+      .addEventListener("click", async (e) => {
+        e.preventDefault();
+        console.log(groupEl);
+        let body = {
+          name: groupEl.value,
+          participants: [
+            "660f840281d1cbab8679f0f2",
+            "660f83ed81d1cbab8679f0ef",
+          ],
+        };
+
+        const response = await fetch("/group/createGroup", {
+          method: "POST",
+          headers: {
+            "content-Type": "application/json",
+            authorization:
+            `Bearer ${jwtToken}`,
+          },
+          body: JSON.stringify(body),
+        });
+        if (response.ok) {
+          socket.emit("joinGroup", body);
+        }
+      });
+
+    //send message to group
+    document
+      .getElementById("send-group-button")
+      .addEventListener("click", async (e) => {
+        e.preventDefault();
+        console.log(sendMsgToGroupEl.value);
+        let content = {
+          groupId: "660f904592ef2e28b21e530c",
+          sender: "660f841c81d1cbab8679f0f5",
+          message: sendMsgToGroupEl.value,
+        };
+        console.log(content);
+
+        const response = await fetch(
+          "/group/sendMessagesInGroup/660f904592ef2e28b21e530c",
+          {
+            method: "POST",
+            headers: {
+              "content-Type": "application/json",
+              authorization:
+              `Bearer ${jwtToken}`,
+            },
+            body: JSON.stringify(content),
+          }
+        );
+        console.log(response);
+        if (response.ok) {
+          socket.emit("sendMessageToGroup", content);
+        }
+      });
+
+    //add new user to group
+    document
+      .getElementById("add-new-user-to-group")
+      .addEventListener("click", async (e) => {
+        const groupId = addGroupIdEl.value;
+        const newUserId = addNewuserEl.value;
+        console.log(groupId, newUserId);
+        try {
+          const response = await fetch(
+            `http://localhost:8080/group/addNewUser/${groupId}/${newUserId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                authorization:
+                `Bearer ${jwtToken}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            socket.emit("addNewUser", groupId, newUserId);
+          } else {
+            console.error("Failed to add new user:", response.statusText);
+          }
+        } catch (error) {
+          console.error("Error adding new user:", error.message);
+        }
+      });
+
+    //remove user from group
+    document
+      .getElementById("remove-user-to-group")
+      .addEventListener("click", async (e) => {
+        const groupId = removeGroupIdEl.value;
+        const newUserId = removeNewuserEl.value;
+        console.log(groupId, newUserId);
+        try {
+          const response = await fetch(
+            `http://localhost:8080/group/removeUser/${groupId}/${newUserId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                authorization:
+                `Bearer ${jwtToken}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            socket.emit('removeUserFromGroup', { groupId, newUserId });
+          } else {
+            console.error("Failed to add new user:", response.statusText);
+          }
+        } catch (error) {
+          console.error("Error adding new user:", error.message);
+        }
+      });
+
+    //clear chat in group
+    clearGroupChatButton.addEventListener("click", async (e) => {
+      const groupId = clearGroupCharInputEl.value;
+      try {
+        const response = await fetch(
+          `http://localhost:8080/group/clearGroupData/${groupId}/`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              authorization:
+              `Bearer ${jwtToken}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          socket.emit('clear chat', { groupId });
+        } else {
+          console.error("Failed to add new user:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error adding new user:", error.message);
+      }
+    });
+
+
+    //delete message in group
+    deleteMessageInGroup.addEventListener("click", async (e) => {
+      e.preventDefault()
+      groupId = "660f904592ef2e28b21e530c"
+      messageId = "660e3b368d8da84b4ded0b79"
+      const response = await fetch(`/group/deleteMessage/${groupId}/${messageId}`, {
+        method: "GET",
+        headers: {
+          "content-Type": "application/json",
+          authorization:
+          `Bearer ${jwtToken}`,
+        }
+      });
+      if (response.ok) {
+        socket.emit("delete group message", { groupId, messageId });
+      }
+    });
+  
+  </script>
+</body>
+
+</html>

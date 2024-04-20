@@ -43,6 +43,7 @@ const createChatGroup = async (req: Request, res: Response) => {
       participants: participants,
     });
     // console.log(newGroup)
+    await admin.updateOne({$push:{groups:newGroup._id}})
     return res
       .status(201)
       .send({ group: newGroup, result: `Group created by ${admin.name}` });
@@ -247,6 +248,16 @@ const groupParticipants=async(req:Request,res:Response)=>{
     }
 }
 
+const getAllGroups=async(req:Request,res:Response)=>{
+  try {
+    const groups=await chatGroupModel.find()
+    return res.status(200).send({groups})
+  } catch (error) {
+    console.log(error)
+    return res.status(500).send({error:"Internal Server Error"})
+  }
+}
+
 export default {
   createChatGroup,
   sendMessageInGroup,
@@ -255,5 +266,6 @@ export default {
   cleareGroupChat,
   deleteMessageInGroup,
   giveAdminToParticipant,
-  groupParticipants
+  groupParticipants,
+  getAllGroups
 };

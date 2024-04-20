@@ -11,5 +11,5 @@ chatGroupRouter.get('/clearGroupData/:groupId',authMiddleware,chatGroupControlle
 chatGroupRouter.get('/deleteMessage/:groupId/:messageId',authMiddleware,chatGroupController.deleteMessageInGroup)
 chatGroupRouter.post('/admin/',authMiddleware,chatGroupController.giveAdminToParticipant)
 chatGroupRouter.get('/getParticipants/:groupId',authMiddleware,chatGroupController.groupParticipants)
-
+chatGroupRouter.get('/getAllGroups',authMiddleware,chatGroupController.getAllGroups)
 export default chatGroupRouter

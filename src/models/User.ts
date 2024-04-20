@@ -7,6 +7,7 @@ export type UserT={
     number:string;
     role:string;
     deviceToken:string;
+    groups:[string]
 }
 
 const userSchema=new Schema<UserT>({
@@ -32,6 +33,10 @@ const userSchema=new Schema<UserT>({
     },
     deviceToken:{
         type:String,
+        required:false
+    },
+    groups:{
+        type:[],
         required:false
     }
 },{

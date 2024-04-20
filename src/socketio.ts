@@ -1,31 +1,42 @@
-import http from "http";
+import {Server as HttpServer} from "http";
 import { Server,Socket } from "socket.io";
 import {DefaultEventsMap } from "socket.io/dist/typed-events";
 
-const getIo = (
-  server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>
-) => {
+let users: { [key: string]: string } = {};
+const getIo = (server:HttpServer) => {
   const io = new Server(server, {
     cors: {
       origin: "http://localhost:3000",
     },
   });
-  io.on("connection", (socket) => {
-    console.log("user connected" , socket.id);
-    sendMessageFunction(socket,io)    
 
-    socket.on("joinGroup", ({ name, participants }) => {
-      console.log(`Group Name ${name} created with ${participants} members`);
-    });
+  io.on("connection",(socket) => {
+    
+    console.log("user connected", socket.id);
 
-    socket.on("sendMessageToGroup", ({ groupId, sender, message }) => {
-      socket.join(groupId);
-      console.log("content", message);
-      io.to(groupId).emit("groupMessage", {
-        message,
-        from:sender
-      });
-    });
+
+  socket.on('initial', (data) => {
+    console.log('initial data', data);
+    const userId: string = data.userId;
+    console.log(userId, 'userId socket');
+    users[userId] = socket.id;
+    console.log(users);
+    console.log('User joined:', userId);
+  });
+
+  socket.on('sendMessage', ({ receiverId, content }) => {
+    console.log('receiver id', receiverId);
+    const recipientSocketId = users[receiverId];
+    console.log('rep user', users);
+    console.log('socketid',recipientSocketId);
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit('message', { content });
+    } else {
+      console.log('Recipient is not connected');
+    }
+  });
+
+    JoinGroup(socket,io)
 
     socket.on("addNewUser", (groupId, userId) => {
       socket.join(groupId);
@@ -52,21 +63,24 @@ const getIo = (
   return io;
 };
 
-function sendMessageFunction(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,io:Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>){
-  socket.on('initial',({userId})=>{
-    console.log("????????????//" , userId);
+let group:{[key:string]:string}={}
+function JoinGroup(socket:Socket,io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>){
+  socket.on("joinGroup", ({ userId }) => {
     socket.join(userId)
-  })
-  socket.on("sendMessage", ({receiverId,content}) => {
-    socket.join(receiverId)
-    console.log("Received message:", content);
-    io.to(receiverId).emit("sendMessage",content)
+    // group[userId]=socket.id
+    console.log(`user joined group ${userId}`);
   });
 
-  socket.on('join',({receiverId})=>{
-    console.log(receiverId);
-    socket.join(receiverId)
-  })
+  socket.on("sendMessageToGroup", ({ groupId, sender, message }) => {
+    // socket.join(groupId);
+    console.log('groupid',groupId)
+    console.log("content", message);
+    io.sockets.in(groupId).emit("groupMessage", {
+      message,
+      from:sender
+    });
+  });
 }
+
 
 export default getIo;

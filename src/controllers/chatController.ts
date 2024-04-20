@@ -15,7 +15,7 @@ const sendMesssage = async (req: Request, res: Response) => {
       { senderId, receiverId },
       { senderId: receiverId, receiverId: senderId }]
     });
-    console.log(existingChat)
+    // console.log(existingChat)
     if(!existingChat){
       await chatModel.create({
         senderId: sender._id,
